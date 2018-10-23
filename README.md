@@ -1,7 +1,6 @@
 # Analysis Tool
 Analysis tool used in a pipeline meant to establish the efficiency of clustering algorithms. Developped as a shiny app.
  
->[You may find additional information here :](doc/temp.pdf)
 	
 ## Requirements
   * software: R(Version 3.4.3 to 3.5), Rstudio(optional)
@@ -11,9 +10,8 @@ Analysis tool used in a pipeline meant to establish the efficiency of clustering
 
   1. Run the following command in R/RStudio:
 ```
-install.packages(c("flowCore","microbenchmark,"DT", "shiny", "shinyjs", "shinydashboard"))
+install.packages(c("microbenchmark,"DT", "shiny", "shinyjs", "shinydashboard"))
 source("https://bioconductor.org/biocLite.R")
-biocLite("Biobase")
 biocLite("flowCore")
 biocLite("ncdfFlow")
 ```
