@@ -1,0 +1,7 @@
+div#shiny-notification-panel {
+    width:500px;
+    height:200px;
+    font-size:30px;
+    top:50%;
+    right:50%;
+}

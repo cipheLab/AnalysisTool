@@ -1,0 +1,10 @@
+Package: AnalysisTool
+Type: Package
+Title: Analysis Tool
+Version: 0.9.0
+Author: Isam Ben Soltane
+Maintainer: Isam Ben Soltane <isam.ben-soltane@inserm.fr>
+Description: Analysis tool used in a pipeline meant to establish the efficiency of clustering algorithms
+License: ?
+Encoding: UTF-8
+LazyData: true
