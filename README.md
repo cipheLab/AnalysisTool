@@ -22,7 +22,7 @@ biocLite("ncdfFlow")
   2. Run the next commands:
 ```
 library("devtools")
-install_github("isambens/Analysis-Tool")
+install_github("isambens/AnalysisTool")
 ```
 
   
@@ -30,6 +30,6 @@ install_github("isambens/Analysis-Tool")
 
   1. Run the following commands in R/RStudio:
 ```
-library("Analysis-Tool")
+library("AnalysisTool")
 AnalysisTool.run()
 ```  
