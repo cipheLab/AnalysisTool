@@ -25,6 +25,10 @@ AnalysisTool.run <- function()
     {
         stop("Could not find app directory. Try re-installing `AnalysisTool`.", call. = FALSE)
     }
-
+    
+    if(!dir.exists(paste0(env.var$tool.wd,"/Projects/")))
+    {
+        dir.create(paste0(env.var$tool.wd,"/Projects/"))
+    }
     shiny::runApp(appDir, display.mode = "normal", launch.browser = T)
 }
