@@ -1562,7 +1562,7 @@ server <- function(input, output, session)
             }
             
             current.markers <- analyses.markers[[as.integer(input[["t_3_3_2_methodSel"]])]]
-            mark.names <- current.project$fcs.files.ui.colnames[[f]]
+            mark.names <- current.project$fcs.files.ui.colnames[[as.integer(input[["t_3_3_2_fileSel"]])]]
             mark.param.concatenated.list <- lapply(1:max(length(current.params),length(current.markers)), function(run)
             {
                 t <- list()
