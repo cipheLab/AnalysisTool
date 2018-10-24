@@ -109,6 +109,7 @@ server <- function(input, output, session)
             if( is.defined(input$t_1_1_select_project) && (input$t_1_1_select_project != "") && (input$t_1_1_select_project != " "))
             {
                 current.project$name <- input$t_1_1_select_project
+                print(env.var$tool.wd)
                 if(dir.exists(paste0(env.var$tool.wd,"/Projects/",current.project$name,"/data/")))
                 {
                     files <- list.files(paste0(env.var$tool.wd,"/Projects/",current.project$name,"/data/"), full.names = F)
