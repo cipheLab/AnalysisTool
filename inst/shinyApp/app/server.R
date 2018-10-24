@@ -1221,7 +1221,7 @@ server <- function(input, output, session)
                                 computed.values$annot.sizes[[f.name]][[algo.name]] <<-   list()
                                 
                                 fcs.populations <- FPH.get.file.clusters(fcs,
-                                                        as.numeric(current.project$ref.files.populations.col[[f.name]][[algo.name]][[current.run]]))
+                                                        as.numeric(current.project$ref.files.populations.col[[f.name]][[algo.name]][[1]]))
                                 pop.sizes <- sapply(fcs.populations, function(pop)
                                 {
                                     return(pop[[1]])
