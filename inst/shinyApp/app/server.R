@@ -937,7 +937,7 @@ server <- function(input, output, session)
                     computed.values$prec.rec.matrices.annot <- list()
                     computed.values$prec.rec.matrices.clust <- list()
                     computed.values$pop.sizes <- list()
-                    computed.values$clust.sizes <- list()
+                    # computed.values$clust.sizes <- list()
                     computed.values$annot.sizes <- list()
                     
                     progress$inc(1/length(temp.files), detail = paste0("File ", f, " added"))
@@ -1003,6 +1003,9 @@ server <- function(input, output, session)
 
 
 
+    
+    
+    
 
 
 
@@ -1172,7 +1175,7 @@ server <- function(input, output, session)
             computed.values$prec.rec.matrices.annot <- list()
             computed.values$prec.rec.matrices.clust <- list()
             computed.values$pop.sizes <-   list()
-            computed.values$clust.sizes <-   list()
+            # computed.values$clust.sizes <-   list()
             computed.values$annot.sizes <-   list()
             
             tmp.fct <- function()
@@ -1196,7 +1199,7 @@ server <- function(input, output, session)
                         #computed.values$FG.matrices.clust[[f.name]] <<-   list()
                         computed.values$FG.matrices.annot[[f.name]] <<-   list()
                         computed.values$pop.sizes[[f.name]] <<-   list()
-                        computed.values$clust.sizes[[f.name]] <<-   list()
+                        # computed.values$clust.sizes[[f.name]] <<-   list()
                         computed.values$annot.sizes[[f.name]] <<-   list()
     
                         if(length(current.project$ref.files.populations.col[[f.name]])>0)
@@ -1217,7 +1220,7 @@ server <- function(input, output, session)
                                 #computed.values$FG.matrices.clust[[f.name]][[algo.name]] <<-   list()
                                 computed.values$FG.matrices.annot[[f.name]][[algo.name]] <<-   list()
                                 computed.values$pop.sizes[[f.name]][[algo.name]] <<-   list()
-                                computed.values$clust.sizes[[f.name]][[algo.name]] <<-   list()
+                                #computed.values$clust.sizes[[f.name]][[algo.name]] <<-   list()
                                 computed.values$annot.sizes[[f.name]][[algo.name]] <<-   list()
                                 
                                 fcs.populations <- FPH.get.file.clusters(fcs,
@@ -1258,13 +1261,13 @@ server <- function(input, output, session)
     
                                         fcs.clusters <-  FPH.get.file.clusters(fcs,
                                                                                as.numeric(current.project$test.files.clusters.col[[f.name]][[algo.name]][[current.run]]))
-                                        computed.values$clust.sizes[[f.name]][[algo.name]][[current.run]] <<- sapply(fcs.clusters, function(cl)
-                                        {
-                                            return(cl[[1]])
-                                        })
-                                        computed.values$clust.sizes[[f.name]][[algo.name]][[current.run]] <<-
-                                            unlist(computed.values$clust.sizes[[f.name]][[algo.name]][[current.run]])/
-                                            sum(unlist(computed.values$clust.sizes[[f.name]][[algo.name]][[current.run]]))
+                                        # computed.values$clust.sizes[[f.name]][[algo.name]][[current.run]] <<- sapply(fcs.clusters, function(cl)
+                                        # {
+                                        #     return(cl[[1]])
+                                        # })
+                                        # computed.values$clust.sizes[[f.name]][[algo.name]][[current.run]] <<-
+                                        #     unlist(computed.values$clust.sizes[[f.name]][[algo.name]][[current.run]])/
+                                        #     sum(unlist(computed.values$clust.sizes[[f.name]][[algo.name]][[current.run]]))
     
                                         
                                         if(current.project$verbose)
