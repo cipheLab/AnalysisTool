@@ -1231,6 +1231,10 @@ server <- function(input, output, session)
                                 })
                                 pop.sizes <<- unlist(unlist(pop.sizes))/sum(unlist(pop.sizes))
                                 
+                                pop.ev <- as.integer(unlist(fcs.populations[[i]][[2]]))
+                                pop.col <- as.numeric(current.project$ref.files.populations.col[[f.name]][[algo.name]][[1]])
+                                pop.real.ID <- as.integer(unique(fcs@exprs[pop.ev,pop.col]))
+                                
     
                                 if(length(current.project$ref.files.populations.col[[f.name]][[algo.name]])>0)
                                 {
@@ -1248,9 +1252,6 @@ server <- function(input, output, session)
                                         computed.values$pop.sizes[[f.name]][[algo.name]][[current.run]] <<- pop.sizes
                                         lapply(1:length(computed.values$pop.sizes[[f.name]][[algo.name]][[current.run]]), function(i)
                                         {
-                                            pop.ev <- as.integer(unlist(fcs.populations[[i]][[2]]))
-                                            pop.col <- as.numeric(current.project$ref.files.populations.col[[f.name]][[algo.name]][[current.run]])
-                                            pop.real.ID <- as.integer(unique(fcs@exprs[pop.ev,pop.col]))
                                             ta <- table(fcs@exprs[,pop.col])
                                             pop.real.ID <- as.integer(which(as.integer(names(ta))==pop.real.ID)[[1]])
     
@@ -1373,8 +1374,8 @@ server <- function(input, output, session)
                     fcs <- current.project$fcs.files[[as.integer(input[["t_3_3_1_fileSel"]])]]
                     if(is.defined(fcs))
                     {
-                        markers.list <- 1:length(colnames(fcs))
-                        names(markers.list) <- colnames(fcs)
+                        markers.list <- 1:length(unlist(current.project$fcs.files.ui.colnames[[as.integer(input[["t_3_3_1_fileSel"]])]]))
+                        names(markers.list) <- unlist(current.project$fcs.files.ui.colnames[[as.integer(input[["t_3_3_1_fileSel"]])]])
                         updateSelectInput(session, paste0("t_3_3_1_m1"), choices=markers.list, selected=markers.list[[1]])
                         updateSelectInput(session, paste0("t_3_3_1_m2"), choices=markers.list, selected=markers.list[[2]])
                     }
