@@ -1219,6 +1219,15 @@ server <- function(input, output, session)
                                 computed.values$pop.sizes[[f.name]][[algo.name]] <<-   list()
                                 computed.values$clust.sizes[[f.name]][[algo.name]] <<-   list()
                                 computed.values$annot.sizes[[f.name]][[algo.name]] <<-   list()
+                                
+                                fcs.populations <- FPH.get.file.clusters(fcs,
+                                                        as.numeric(current.project$ref.files.populations.col[[f.name]][[algo.name]][[current.run]]))
+                                pop.sizes <- sapply(fcs.populations, function(pop)
+                                {
+                                    return(pop[[1]])
+                                })
+                                pop.sizes <<- unlist(unlist(pop.sizes))/sum(unlist(pop.sizes))
+                                
     
                                 if(length(current.project$ref.files.populations.col[[f.name]][[algo.name]])>0)
                                 {
@@ -1233,15 +1242,7 @@ server <- function(input, output, session)
                                             print(paste("            Run:",current.run))
                                             print("                retrieving populations and clusters data")
                                         }
-                                        fcs.populations <- FPH.get.file.clusters(fcs,
-                                                                                 as.numeric(current.project$ref.files.populations.col[[f.name]][[algo.name]][[current.run]]))
-                                        computed.values$pop.sizes[[f.name]][[algo.name]][[current.run]] <<- sapply(fcs.populations, function(pop)
-                                        {
-                                            return(pop[[1]])
-                                        })
-                                        computed.values$pop.sizes[[f.name]][[algo.name]][[current.run]] <<-
-                                            unlist(computed.values$pop.sizes[[f.name]][[algo.name]][[current.run]])/
-                                            sum(unlist(computed.values$pop.sizes[[f.name]][[algo.name]][[current.run]]))
+                                        computed.values$pop.sizes[[f.name]][[algo.name]][[current.run]] <<- pop.sizes
                                         lapply(1:length(computed.values$pop.sizes[[f.name]][[algo.name]][[current.run]]), function(i)
                                         {
                                             pop.ev <- as.integer(unlist(fcs.populations[[i]][[2]]))
@@ -1836,7 +1837,7 @@ server <- function(input, output, session)
                             }
 
                             current.markers <- analyses.markers[[as.integer(input[["t_3_3_2_methodSel"]])]]
-                            mark.names <- current.project$fcs.files.ui.colnames[[f]]
+                            mark.names <- current.project$fcs.files.ui.colnames[[as.integer(input[["t_3_3_2_fileSel"]])]]
                             mark.param.concatenated.list <- lapply(1:max(length(current.params),length(current.markers)), function(run)
                             {
                                 t <- list()
