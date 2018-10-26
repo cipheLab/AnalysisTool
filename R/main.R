@@ -25,7 +25,6 @@ AnalysisTool.run <- function()
     appDir <- system.file("shinyApp", "app", package = "AnalysisTool")
     if (appDir == "")
     {
-        "%not.in%" = Negate("%in%")
         stop("Could not find app directory. Try re-installing `AnalysisTool`.", call. = FALSE)
     }
     
