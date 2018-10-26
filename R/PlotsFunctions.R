@@ -1,5 +1,3 @@
-library(RColorBrewer)
-
 draw.cumulated.filled.plots <- function(points.list, points.list.xvalues, max.height=2, x.values.range=c(0.15,1), x.lab="par", y.lab="val")
 {
     x.values <- sort(unique(as.numeric(unlist(unlist(points.list.xvalues)))))

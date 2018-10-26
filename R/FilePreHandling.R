@@ -1,5 +1,3 @@
-library(flowCore)
-
 #EVERY FCS FILE MUST HAVE A LAST COLUMN WITH THE CLUSTER ID OF EACH EVENT
 FPH.load.folder <- function(path.to.fcs.folder)
 {

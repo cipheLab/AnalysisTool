@@ -1,5 +1,3 @@
-library(flowCore)
-
 '%notin%' <- Negate('%in%')
 
 get.params.list <- function(runs)

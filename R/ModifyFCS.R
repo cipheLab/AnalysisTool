@@ -1,5 +1,3 @@
-library(flowCore)
-
 add.keyword.to.fcs <- function(fcs, added.keyword, added.keyword.name)
 {
     fcs.out <- fcs

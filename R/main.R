@@ -18,11 +18,14 @@ AnalysisTool.run <- function()
     library(shinydashboard)
     library(shinyjs)
     library(DT)
+    library(RColorBrewer)
+    library(ggplot2)
 
 
     appDir <- system.file("shinyApp", "app", package = "AnalysisTool")
     if (appDir == "")
     {
+        "%not.in%" = Negate("%in%")
         stop("Could not find app directory. Try re-installing `AnalysisTool`.", call. = FALSE)
     }
     

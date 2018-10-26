@@ -1,5 +1,3 @@
-library(microbenchmark)
-
 benchmark.method <- function(method.name, fcs.file, directory, parameters = list(), markers_cols)
 {
     fct.name <- paste0("BRP_BM.",method.name,".execute")
