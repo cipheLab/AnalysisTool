@@ -3,6 +3,9 @@ library(shinydashboard)
 library(flowCore)
 library(shinyjs)
 library(DT)
+library(parallel)
+library(doSNOW)
+library(ggplot2)
 
 server <- function(input, output, session)
 {
@@ -23,7 +26,8 @@ server <- function(input, output, session)
         modified.files = NULL,
         ref.files.populations.col  = NULL,
         test.files.clusters.col = NULL,
-        verbose = T
+        verbose = T,
+        nmb.cores = detectCores()
     )
     
     clustering.algorithms <- reactiveValues(
@@ -51,7 +55,7 @@ server <- function(input, output, session)
     )
     
     env.var <- reactiveValues(
-        tool.wd = system.file("shinyApp", "app", package = "AnalysisTool")
+        tool.wd = getwd()
     )
     
     write.enriched.FCS <- function(fcs, fcs.path)
@@ -937,7 +941,7 @@ server <- function(input, output, session)
                     computed.values$prec.rec.matrices.annot <- list()
                     computed.values$prec.rec.matrices.clust <- list()
                     computed.values$pop.sizes <- list()
-                    # computed.values$clust.sizes <- list()
+                    computed.values$clust.sizes <- list()
                     computed.values$annot.sizes <- list()
                     
                     progress$inc(1/length(temp.files), detail = paste0("File ", f, " added"))
@@ -1003,9 +1007,6 @@ server <- function(input, output, session)
 
 
 
-    
-    
-    
 
 
 
@@ -1122,6 +1123,8 @@ server <- function(input, output, session)
         {
             showNotification("RUNNING ANALYSES",duration=NULL,type = "message",id="score_compute_message")
             #RETRIEVE CLUSTERS COLUMNS--------------------------------------------------------------------
+            
+            #Store reactive and global values
             current.project$ref.files.populations.col <- list()
             current.project$test.files.clusters.col <- list()
             lapply(1:length(current.project$fcs.files), function(f.id)
@@ -1175,7 +1178,7 @@ server <- function(input, output, session)
             computed.values$prec.rec.matrices.annot <- list()
             computed.values$prec.rec.matrices.clust <- list()
             computed.values$pop.sizes <-   list()
-            # computed.values$clust.sizes <-   list()
+            computed.values$clust.sizes <-   list()
             computed.values$annot.sizes <-   list()
             
             tmp.fct <- function()
@@ -1183,15 +1186,34 @@ server <- function(input, output, session)
                 lapply(1:length(current.project$fcs.files), function(f.id)
                 {
                     fcs <- current.project$fcs.files[[f.id]]
+                    f.name <<- names(current.project$fcs.files)[f.id]
                     if(is.defined(fcs))
                     {
+                        fcs.populations <- FPH.get.file.clusters(fcs,
+                                                              as.numeric(current.project$ref.files.populations.col[[f.name]][[1]][[1]]))
+                        pop.sizes <- sapply(fcs.populations, function(pop)
+                        {
+                            return(pop[[1]])
+                        })
+                        pop.sizes <- unlist(pop.sizes)/ sum(unlist(pop.sizes))
+                        for( i in 1:length(pop.sizes) )
+                        {
+                            pop.ev <- as.integer(unlist(fcs.populations[[i]][[2]]))
+                            pop.col <- as.numeric(current.project$ref.files.populations.col[[f.name]][[1]][[1]])
+                            pop.real.ID <- as.integer(unique(fcs@exprs[pop.ev,pop.col]))
+                            ta <- table(fcs@exprs[,pop.col])
+                            pop.real.ID <- as.integer(which(as.integer(names(ta))==pop.real.ID)[[1]])
+                            
+                            names(pop.sizes)[i] <- current.project$mapping.files[[f.id]][pop.real.ID,2]
+                        }
+                        
+                        
                         showNotification(paste("    File",f.id),id="score_compute_message",duration=NULL,type="message")
                         if(current.project$verbose)
                         {
                             print(paste("    File",f.id))
                         }
                         
-                        f.name <<- names(current.project$fcs.files)[f.id]
                         computed.values$purity.matrix.clust[[f.name]] <<-   list()
                         computed.values$purity.matrix.annot[[f.name]] <<-   list()
                         #computed.values$prec.rec.matrices.clust[[f.name]] <<-   list()
@@ -1199,12 +1221,11 @@ server <- function(input, output, session)
                         #computed.values$FG.matrices.clust[[f.name]] <<-   list()
                         computed.values$FG.matrices.annot[[f.name]] <<-   list()
                         computed.values$pop.sizes[[f.name]] <<-   list()
-                        # computed.values$clust.sizes[[f.name]] <<-   list()
+                        computed.values$clust.sizes[[f.name]] <<-   list()
                         computed.values$annot.sizes[[f.name]] <<-   list()
     
                         if(length(current.project$ref.files.populations.col[[f.name]])>0)
                         {
-                            fcs.ref <- fcs
                             lapply(1:length(current.project$ref.files.populations.col[[f.name]]), function(current.algo)
                             {
                                 algo.name <- names(current.project$ref.files.populations.col[[f.name]])[current.algo]
@@ -1220,98 +1241,86 @@ server <- function(input, output, session)
                                 #computed.values$FG.matrices.clust[[f.name]][[algo.name]] <<-   list()
                                 computed.values$FG.matrices.annot[[f.name]][[algo.name]] <<-   list()
                                 computed.values$pop.sizes[[f.name]][[algo.name]] <<-   list()
-                                #computed.values$clust.sizes[[f.name]][[algo.name]] <<-   list()
+                                computed.values$clust.sizes[[f.name]][[algo.name]] <<-   list()
                                 computed.values$annot.sizes[[f.name]][[algo.name]] <<-   list()
-                                
-                                fcs.populations <- FPH.get.file.clusters(fcs,
-                                                        as.numeric(current.project$ref.files.populations.col[[f.name]][[algo.name]][[1]]))
-                                pop.sizes <- sapply(fcs.populations, function(pop)
-                                {
-                                    return(pop[[1]])
-                                })
-                                pop.sizes <<- unlist(unlist(pop.sizes))/sum(unlist(pop.sizes))
-                                
-                                pop.ev <- as.integer(unlist(fcs.populations[[i]][[2]]))
-                                pop.col <- as.numeric(current.project$ref.files.populations.col[[f.name]][[algo.name]][[1]])
-                                pop.real.ID <- as.integer(unique(fcs@exprs[pop.ev,pop.col]))
-                                
     
                                 if(length(current.project$ref.files.populations.col[[f.name]][[algo.name]])>0)
                                 {
-                                    lapply(1:length(current.project$ref.files.populations.col[[f.name]][[algo.name]]), function(current.run)
+                                    tmp.curr.proj <- isolate(reactiveValuesToList(current.project))
+                                    runs.list <- 1:length(tmp.curr.proj$ref.files.populations.col[[f.name]][[algo.name]])
+                                    clust.col.list <- tmp.curr.proj$test.files.clusters.col[[f.name]][[algo.name]]
+                                    
+                                    file.size <- object.size(fcs)
+                                    nmb.cl <- get.nmb.cores.max(file.size, 
+                                                                available.cores = current.project$nmb.cores, 
+                                                                x.cores = 0.5, x.ram = 0.4, correction.coef = 1.05)
+                                    cl <- makeCluster(nmb.cl)
+                                    registerDoSNOW(cl)
+                                    
+                                    notification.3.fct <- function(i)
+                                    {
+                                        print(paste0("            Run: ",i))
+                                        showNotification(paste0("Run: ",i),id="score_compute_message_3",duration=NULL,type="message")
+                                    }
+                                    showNotification("Preparing computation",id="score_compute_message_3",duration=NULL,type="message")
+                                    temp.out <- foreach(run.id=runs.list,clust.col=clust.col.list,
+                                                        .options.snow = list(progress=notification.3.fct),
+                                                        .packages=c("flowCore"),
+                                                        .export = c("is.defined","runs.list","pop.sizes","fcs","fcs.populations",
+                                                                    "FPH.get.file.clusters", "FPH.get.purity.matrix",
+                                                                    "FPH.get.prec.rec.matrices", "FPH.compute.F.G.matrix",
+                                                                    "FPH.annotate.clusters.to.fcs")) %dopar%
                                     {
                                         #run.name <- current.project$ref.files.populations.col[[f.name]][[algo.name]]
                                         
-                                        tmp.txt.notif <- paste("            Run:",current.run)
-                                        showNotification(tmp.txt.notif,id="score_compute_message_3",duration=NULL,type="message")
-                                        if(current.project$verbose)
+                                        fcs.clusters <-  FPH.get.file.clusters(fcs, as.numeric(clust.col))
+                                        clust.sizes <- sapply(fcs.clusters, function(cl)
                                         {
-                                            print(paste("            Run:",current.run))
-                                            print("                retrieving populations and clusters data")
-                                        }
-                                        computed.values$pop.sizes[[f.name]][[algo.name]][[current.run]] <<- pop.sizes
-                                        lapply(1:length(computed.values$pop.sizes[[f.name]][[algo.name]][[current.run]]), function(i)
-                                        {
-                                            ta <- table(fcs@exprs[,pop.col])
-                                            pop.real.ID <- as.integer(which(as.integer(names(ta))==pop.real.ID)[[1]])
-    
-                                            names(computed.values$pop.sizes[[f.name]][[algo.name]][[current.run]])[i] <<-
-                                                current.project$mapping.files[[f.id]][pop.real.ID,2]
+                                            return(cl[[1]])
                                         })
-    
-    
-                                        fcs.clusters <-  FPH.get.file.clusters(fcs,
-                                                                               as.numeric(current.project$test.files.clusters.col[[f.name]][[algo.name]][[current.run]]))
-                                        # computed.values$clust.sizes[[f.name]][[algo.name]][[current.run]] <<- sapply(fcs.clusters, function(cl)
-                                        # {
-                                        #     return(cl[[1]])
-                                        # })
-                                        # computed.values$clust.sizes[[f.name]][[algo.name]][[current.run]] <<-
-                                        #     unlist(computed.values$clust.sizes[[f.name]][[algo.name]][[current.run]])/
-                                        #     sum(unlist(computed.values$clust.sizes[[f.name]][[algo.name]][[current.run]]))
-    
-                                        
-                                        if(current.project$verbose)
-                                        {
-                                            print("                generating purity matrix and annotating files")
-                                        }
+                                        clust.sizes <- clust.sizes / sum(unlist(clust.sizes))
                                         mat.clust <- FPH.get.purity.matrix(fcs.populations, fcs.clusters)
-    
-                                        fcs.annotations.file <- FPH.annotate.clusters.to.fcs(fcs.ref, mat.clust,
-                                                                                             as.numeric(current.project$test.files.clusters.col[[f.name]][[algo.name]][[current.run]]))
+                                        
+                                        
+                                        
+                                        fcs.annotations.file <- FPH.annotate.clusters.to.fcs(fcs, mat.clust, as.numeric(clust.col))
                                         fcs.annotations <- FPH.get.file.clusters(fcs.annotations.file,as.numeric(ncol(fcs.annotations.file@exprs)))
-                                        computed.values$annot.sizes[[f.name]][[algo.name]][[current.run]] <<- sapply(fcs.annotations, function(an)
+                                        annot.sizes <- sapply(fcs.annotations, function(an)
                                         {
                                             return(an[[1]])
                                         })
-                                        computed.values$annot.sizes[[f.name]][[algo.name]][[current.run]] <<-
-                                            unlist(computed.values$annot.sizes[[f.name]][[algo.name]][[current.run]])/
-                                            sum(unlist(computed.values$annot.sizes[[f.name]][[algo.name]][[current.run]]))
-    
+                                        annot.sizes <<- unlist(annot.sizes) / sum(unlist(annot.sizes))
                                         mat.annot <- FPH.get.purity.matrix(fcs.populations, fcs.annotations)
-    
-                                        if(current.project$verbose)
-                                        {
-                                            print("                computing precision and recall")
-                                        }
-                                        computed.values$purity.matrix.clust[[f.name]][[algo.name]][[current.run]] <<- mat.clust
-                                        computed.values$purity.matrix.annot[[f.name]][[algo.name]][[current.run]] <<- mat.annot
-    
+                                        
+                                        
+                                        
                                         #prec.rec.clust <- FPH.get.prec.rec.matrices(fcs.populations, fcs.clusters)
                                         prec.rec.annot <- FPH.get.prec.rec.matrices(fcs.populations, fcs.annotations)
                                         
-                                        #computed.values$prec.rec.matrices.clust[[f.name]][[algo.name]][[current.run]] <<- prec.rec.clust
-                                        computed.values$prec.rec.matrices.annot[[f.name]][[algo.name]][[current.run]] <<- prec.rec.annot
                                         
-                                        if(current.project$verbose)
-                                        {
-                                            print("                computing F score")
-                                        }
+                                        
                                         #FG.clust <- FPH.compute.F.G.matrix(prec.rec.clust)
                                         FG.annot <- FPH.compute.F.G.matrix(prec.rec.annot)
-                                        #computed.values$FG.matrices.clust[[f.name]][[algo.name]][[current.run]] <<- FG.clust
-                                        computed.values$FG.matrices.annot[[f.name]][[algo.name]][[current.run]] <<- FG.annot
-                                    })
+                                        
+                                        return(list(pop.sizes,
+                                                    annot.sizes, mat.annot, prec.rec.annot, FG.annot,
+                                                    clust.sizes, mat.clust#, prec.rec.clust, FG.clust
+                                                    ))
+                                    }
+                                    
+                                    for (current.run in unlist(runs.list) )
+                                    {
+                                        computed.values$pop.sizes[[f.name]][[algo.name]][[current.run]] <<- temp.out[[current.run]][[1]]
+                                        computed.values$annot.sizes[[f.name]][[algo.name]][[current.run]] <<- temp.out[[current.run]][[2]]
+                                        computed.values$purity.matrix.annot[[f.name]][[algo.name]][[current.run]] <<- temp.out[[current.run]][[3]]
+                                        computed.values$prec.rec.matrices.annot[[f.name]][[algo.name]][[current.run]] <<- temp.out[[current.run]][[4]]
+                                        computed.values$FG.matrices.annot[[f.name]][[algo.name]][[current.run]] <<- temp.out[[current.run]][[5]] 
+                                        computed.values$clust.sizes[[f.name]][[algo.name]][[current.run]] <<- temp.out[[current.run]][[6]]
+                                        computed.values$purity.matrix.clust[[f.name]][[algo.name]][[current.run]] <<- temp.out[[current.run]][[7]]
+                                        # computed.values$prec.rec.matrices.clust[[f.name]][[algo.name]][[current.run]] <<- temp.out[[8]]
+                                        # computed.values$FG.matrices.clust[[f.name]][[algo.name]][[current.run]] <<- temp.out[[9]] 
+                                    }
+                                    stopCluster(cl)
                                 }
                             })
                         }
@@ -1374,8 +1383,8 @@ server <- function(input, output, session)
                     fcs <- current.project$fcs.files[[as.integer(input[["t_3_3_1_fileSel"]])]]
                     if(is.defined(fcs))
                     {
-                        markers.list <- 1:length(unlist(current.project$fcs.files.ui.colnames[[as.integer(input[["t_3_3_1_fileSel"]])]]))
-                        names(markers.list) <- unlist(current.project$fcs.files.ui.colnames[[as.integer(input[["t_3_3_1_fileSel"]])]])
+                        markers.list <- 1:length(colnames(fcs))
+                        names(markers.list) <- colnames(fcs)
                         updateSelectInput(session, paste0("t_3_3_1_m1"), choices=markers.list, selected=markers.list[[1]])
                         updateSelectInput(session, paste0("t_3_3_1_m2"), choices=markers.list, selected=markers.list[[2]])
                     }
@@ -1747,14 +1756,16 @@ server <- function(input, output, session)
                             tmp.run.parameters <- extract.run.parameters(analyses.run)
                             if(length(tmp.run.parameters)>0)
                             {
-                                for(par.id in 1:length(tmp.run.parameters))
+                                for(par.id in 1:(length(tmp.run.parameters)-1))
                                 {
                                     tmp.run.name <- paste0(tmp.run.name, names(tmp.run.parameters)[par.id], "=", tmp.run.parameters[[par.id]], ", ")
                                 }
                             }
+                            tmp.run.name <- paste0(tmp.run.name, "\n",names(tmp.run.parameters)[length(tmp.run.parameters)], "=", 
+                                                   tmp.run.parameters[[length(tmp.run.parameters)]])
 
                             #PLOT F SCORES---------------------------------------------------------------------------------------------------
-                            jpeg(outfile)
+                            jpeg(outfile, width=720, height=480)
                             draw.F.score.barplot(F.mat, pop.names, pop.sizes, 
                                                  plot.title = tmp.run.name)
                             dev.off()

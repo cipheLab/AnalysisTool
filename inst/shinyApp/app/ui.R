@@ -139,14 +139,14 @@ ui <- dashboardPage(
                                 (
                                     box
                                     (
-                                        id="t_3_3_2_sumScoreByParam", width=6,style="overflow:auto",
+                                        id="t_3_3_2_sumScoreByParam", width=6,style="overflow:auto;height:65vh;max-height:75vh",
                                         selectInput("t_3_3_2_paramSel", "Select Variable Parameter", choices = NULL, selected = NULL),
                                         selectInput("t_3_3_2_FixedparamSel", "Select Fixed Values", choices = NULL, selected = NULL),
                                         imageOutput("t_3_3_2_paramSelPlot")
                                     ),
                                     box
                                     (
-                                        id="t_3_3_2_scoreByPOP", width=6,style="overflow:auto",
+                                        id="t_3_3_2_scoreByPOP", width=6,style="overflow:auto;height:65vh;max-height:75vh",
                                         selectInput("t_3_3_2_runSel", "Select run", choices = NULL, selected = NULL),
                                         imageOutput("t_3_3_2_runSelPlot")
                                     )

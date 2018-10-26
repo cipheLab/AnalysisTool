@@ -4,13 +4,13 @@ Analysis tool used in a pipeline meant to establish the efficiency of clustering
 	
 ## Requirements
   * software: R(Version 3.4.3 to 3.5), Rstudio(optional)
-  * R packages: flowcore, microbenchmark, ncdfFlow, shiny, shinydashboard, shinyjs, DT
+  * R packages: flowcore, microbenchmark, ncdfFlow, shiny, shinydashboard, shinyjs, DT, RColorBrewer, ggplot2
   
 ## Quick installation guide
 
   1. Run the following command in R/RStudio:
 ```
-install.packages(c("microbenchmark,"DT", "shiny", "shinyjs", "shinydashboard"))
+install.packages(c("microbenchmark,"DT", "ggplot2", "RColorBrewer", shiny", "shinyjs", "shinydashboard"))
 source("https://bioconductor.org/biocLite.R")
 biocLite("flowCore")
 biocLite("ncdfFlow")
