@@ -9,7 +9,7 @@ library(ggplot2)
 
 server <- function(input, output, session)
 {
-    "%not.in%" = Negate("%in%")
+    "%not.in%" <- Negate("%in%")
     useShinyjs()
     # options(shiny.reactlog=TRUE) 
 
@@ -2181,7 +2181,7 @@ server <- function(input, output, session)
 
                             output$t_3_3_4_clustersDetailsBelow <- renderTable(
                             {
-                                "%not.in%" = Negate("%in%")
+                                "%not.in%" <- Negate("%in%")
                                 outer.clusters <- 1:length(associated.annot)
                                 outer.clusters <- outer.clusters[unlist(which(outer.clusters%notin%selected.clusters))]
 
@@ -2209,7 +2209,7 @@ server <- function(input, output, session)
                             })
                             output$t_3_3_4_clustersDetailsAbove <- renderTable(
                             {
-                                "%not.in%" = Negate("%in%")
+                                "%not.in%" <- Negate("%in%")
                                 outer.clusters <- 1:length(associated.annot)
                                 outer.clusters <- outer.clusters[unlist(which(outer.clusters%notin%selected.clusters))]
 
