@@ -9,6 +9,7 @@ library(ggplot2)
 
 server <- function(input, output, session)
 {
+    "%not.in%" = Negate("%in%")
     useShinyjs()
     # options(shiny.reactlog=TRUE) 
 
