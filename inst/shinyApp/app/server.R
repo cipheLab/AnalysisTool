@@ -2183,7 +2183,7 @@ server <- function(input, output, session)
                             {
                                 "%not.in%" <- Negate("%in%")
                                 outer.clusters <- 1:length(associated.annot)
-                                outer.clusters <- outer.clusters[unlist(which(outer.clusters%notin%selected.clusters))]
+                                outer.clusters <- outer.clusters[unlist(which(outer.clusters%not.in%selected.clusters))]
 
                                 cl.table.below <- matrix(NA, nrow=length(outer.clusters), ncol=4)
                                 colnames(cl.table.below) <- c("BELOW THRESHOLD","precision","Relative Size (annotation)", "Relative Size (file)")
@@ -2211,7 +2211,7 @@ server <- function(input, output, session)
                             {
                                 "%not.in%" <- Negate("%in%")
                                 outer.clusters <- 1:length(associated.annot)
-                                outer.clusters <- outer.clusters[unlist(which(outer.clusters%notin%selected.clusters))]
+                                outer.clusters <- outer.clusters[unlist(which(outer.clusters%not.in%selected.clusters))]
 
                                 cl.table.above <- matrix(NA, nrow=length(selected.clusters), ncol=4)
                                 colnames(cl.table.above) <- c("ABOVE THRESHOLD","precision","Relative Size (annotation)", "Relative Size (file)")
