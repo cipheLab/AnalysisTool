@@ -9,11 +9,14 @@ draw.cumulated.filled.plots <- function(points.list, points.list.xvalues, max.he
         mat.row.id <- (i-1)*length(x.values)
         mat[(mat.row.id+1):(mat.row.id+length(x.values)), 2] <- names(points.list)[i]
         mat[(mat.row.id+1):(mat.row.id+length(x.values)), 3] <- x.values
-        for(j in 1:length(points.list.xvalues[[i]]))
+        if(length(points.list.xvalues)>=i && length(points.list.xvalues[[i]])>0)
         {
-            x <- points.list.xvalues[[i]][[j]]
-            x.id <- which(unlist(as.numeric(x.values))==as.numeric(x))[[1]]
-            mat[mat.row.id+x.id, 1] <- as.numeric(points.list[[i]][[j]])
+            for(j in 1:length(points.list.xvalues[[i]]))
+            {
+                x <- points.list.xvalues[[i]][[j]]
+                x.id <- which(unlist(as.numeric(x.values))==as.numeric(x))[[1]]
+                mat[mat.row.id+x.id, 1] <- as.numeric(points.list[[i]][[j]])
+            }
         }
     }
     df <- data.frame(mat)

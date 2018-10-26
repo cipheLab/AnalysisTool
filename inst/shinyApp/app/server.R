@@ -1705,6 +1705,12 @@ server <- function(input, output, session)
                             
                             tmp <- FPH.map.test.to.ref(mat)
                             pop.ids[[i]] <- paste0(pop.names[tmp],"__AN")
+                            null.pop.ids <- NULL
+                            if(paste0(pop.names[-tmp],"__AN") != "__AN")
+                            {
+                                null.pop.ids <- paste0(pop.names[-tmp],"__AN")
+                            }
+                            
                             for(j in 1:nrow(mat))
                             {
                                 F.max <- max(mat[j,])
@@ -1717,6 +1723,17 @@ server <- function(input, output, session)
                                 list.pop.points[[pop.ids[[i]][[j]]]] <- c(unlist(list.pop.points[[pop.ids[[i]][[j]]]]), F.max)
                                 list.pop.points.xval[[pop.ids[[i]][[j]]]] <- c(unlist(list.pop.points.xval[[pop.ids[[i]][[j]]]]), 
                                                                                as.numeric(computed.values$ordered.table[i,2]))
+                            }
+                            if(!is.null(null.pop.ids))
+                            {
+                                for(j in 1:length(null.pop.ids))
+                                {
+                                    if(!(null.pop.ids[[j]]%in%names(list.pop.points)))
+                                    {
+                                        print(null.pop.ids[[j]])
+                                        list.pop.points[[null.pop.ids[[j]]]] <- NA
+                                    }
+                                }
                             }
                             
                         }
