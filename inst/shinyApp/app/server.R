@@ -12,7 +12,7 @@ server <- function(input, output, session)
     "%not.in%" <- Negate("%in%")
     useShinyjs()
     # options(shiny.reactlog=TRUE) 
-
+    
     #======================================================================================================================
     #======================REACTIVE VALUES=================================================================================
     #======================================================================================================================
@@ -336,7 +336,6 @@ server <- function(input, output, session)
                     {
                         t <- paste0(names(current.project$fcs.files)[f], "__", f,"_",length(current.project$fcs.files)+1)
                     }
-                    print(t)
                     
                     if( is.defined(input[[paste0("t_1_3_",current.project$name,"_",f,"_pop_col")]]))
                     {
@@ -1462,10 +1461,14 @@ server <- function(input, output, session)
 
                             highlighted.pop <- as.integer(as.list(input[["t_3_3_1_refPopSel"]]))
                             names(highlighted.pop) <- pop.names[unlist(highlighted.pop)]
-                            selected.pop <- lapply(highlighted.pop, function(p)
+                            selected.pop <- list()
+                            for(p.id in 1:length(highlighted.pop))
                             {
-                                return(as.numeric(unlist(which(mat[,pop.col]==p))))
-                            })
+                                f.id <- as.integer(input[["t_3_3_1_fileSel"]])
+                                lab.col <- as.integer(input[[paste0("t_1_3_",current.project$name,"_",f.id,"_lab_col")]])
+                                p.real.id <- which(current.project$mapping.files[[f.id]][,lab.col]==names(highlighted.pop)[p.id])[[1]]
+                                selected.pop[[names(highlighted.pop)[p.id]]] <- as.numeric(unlist(which(mat[,pop.col]==p.real.id)))
+                            }
 
 
                             #PLOT---------------------------------------------------------------------------------------------------
@@ -1730,7 +1733,6 @@ server <- function(input, output, session)
                                 {
                                     if(!(null.pop.ids[[j]]%in%names(list.pop.points)))
                                     {
-                                        print(null.pop.ids[[j]])
                                         list.pop.points[[null.pop.ids[[j]]]] <- NA
                                     }
                                 }
@@ -2198,9 +2200,8 @@ server <- function(input, output, session)
 
                             output$t_3_3_4_clustersDetailsBelow <- renderTable(
                             {
-                                "%not.in%" <- Negate("%in%")
                                 outer.clusters <- 1:length(associated.annot)
-                                outer.clusters <- outer.clusters[unlist(which(outer.clusters%not.in%selected.clusters))]
+                                outer.clusters <- outer.clusters[unlist(which(outer.clusters%notin%selected.clusters))]
 
                                 cl.table.below <- matrix(NA, nrow=length(outer.clusters), ncol=4)
                                 colnames(cl.table.below) <- c("BELOW THRESHOLD","precision","Relative Size (annotation)", "Relative Size (file)")
@@ -2226,9 +2227,8 @@ server <- function(input, output, session)
                             })
                             output$t_3_3_4_clustersDetailsAbove <- renderTable(
                             {
-                                "%not.in%" <- Negate("%in%")
                                 outer.clusters <- 1:length(associated.annot)
-                                outer.clusters <- outer.clusters[unlist(which(outer.clusters%not.in%selected.clusters))]
+                                outer.clusters <- outer.clusters[unlist(which(outer.clusters%notin%selected.clusters))]
 
                                 cl.table.above <- matrix(NA, nrow=length(selected.clusters), ncol=4)
                                 colnames(cl.table.above) <- c("ABOVE THRESHOLD","precision","Relative Size (annotation)", "Relative Size (file)")
