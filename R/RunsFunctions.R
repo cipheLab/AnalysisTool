@@ -1,9 +1,9 @@
-'%notin%' <- Negate('%in%')
+'%not.in%' <- Negate('%in%')
 
 get.params.list <- function(runs)
 {
     params.names.list <- c()
-    "%notin%" <- Negate("%in%")
+    "%not.in%" <- Negate("%in%")
     ordered.table <- c()
     
     #INIT LISTS
@@ -301,44 +301,26 @@ order.table.by.sub.params <- function(ordered.table)
     return( ordered.table[unlist(unlist(ids)), ] )
 }
 
-compute.purity.points <- function(clusters, annotations, purity.matrix.clust)
+compute.purity.points <- function(clusters, purity.matrix.clust, pop.names)
 {
-    purity.values <- lapply(1:nrow(purity.matrix.clust), function(cl)
+    pop.clusters.list <- list()
+    pop.clusters.purity <- list()
+    associated.pop <- list()
+    for(p.n in pop.names)
     {
-        pur <- max(purity.matrix.clust[cl,])
-        
-        return(pur)
-    })
-    
-    associated.annot <- lapply(1:length(clusters), function(cl)
+        pop.clusters.list[[p.n]] <- list()
+        pop.clusters.purity[[p.n]] <- list()
+    }
+    for(cl.id in 1:nrow(purity.matrix.clust))
     {
-        annot.id <- 0
-        lapply(1:length(annotations), function(an)
-        {
-            if(length(which(annotations[[an]][[2]]%in%clusters[[cl]][[2]]))==clusters[[cl]][[1]])
-            {
-                annot.id <<- an
-            }
-        })
-        
-        return(annot.id)
-    })
+        best.pop <- which(purity.matrix.clust[cl.id,] == max(purity.matrix.clust[cl.id,]))[[1]]
+        pop.clusters.list[[pop.names[[best.pop]]]] <- c(pop.clusters.list[[pop.names[[best.pop]]]],cl.id)
+        pop.clusters.purity[[pop.names[[best.pop]]]] <- c(pop.clusters.purity[[pop.names[[best.pop]]]],
+                                                              purity.matrix.clust[cl.id, best.pop])
+        associated.pop[[cl.id]] <- best.pop
+    }
     
-    
-    points.ids <- as.list(rep(NA,length(annotations)))
-    lapply(1:length(associated.annot), function(cl)
-    {
-        if(is.na(points.ids[[associated.annot[[cl]]]]))
-        {
-            points.ids[[associated.annot[[cl]]]] <<- cl
-        }
-        else
-        {
-            points.ids[[associated.annot[[cl]]]] <<- c(points.ids[[associated.annot[[cl]]]],cl)
-        }
-    })
-    
-    return(list(points.ids, purity.values, associated.annot))
+    return(list(pop.clusters.list, pop.clusters.purity, associated.pop))
 }
 
 extract.run.parameters <- function(run)

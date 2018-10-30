@@ -1254,8 +1254,8 @@ server <- function(input, output, session)
                                     nmb.cl <- get.nmb.cores.max(file.size, 
                                                                 available.cores = current.project$nmb.cores, 
                                                                 x.cores = 0.5, x.ram = 0.4, correction.coef = 1.05)
-                                    cl <- makeCluster(nmb.cl)
-                                    registerDoSNOW(cl)
+                                    # cl <- makeCluster(nmb.cl)
+                                    # registerDoSNOW(cl)
                                     
                                     notification.3.fct <- function(i)
                                     {
@@ -1263,14 +1263,17 @@ server <- function(input, output, session)
                                         showNotification(paste0("Run: ",i),id="score_compute_message_3",duration=NULL,type="message")
                                     }
                                     showNotification("Preparing computation",id="score_compute_message_3",duration=NULL,type="message")
-                                    temp.out <- foreach(run.id=runs.list,clust.col=clust.col.list,
-                                                        .options.snow = list(progress=notification.3.fct),
-                                                        .packages=c("flowCore"),
-                                                        .export = c("is.defined","runs.list","pop.sizes","fcs","fcs.populations",
-                                                                    "FPH.get.file.clusters", "FPH.get.purity.matrix",
-                                                                    "FPH.get.prec.rec.matrices", "FPH.compute.F.G.matrix",
-                                                                    "FPH.annotate.clusters.to.fcs")) %dopar%
+                                    # temp.out <- foreach(run.id=runs.list,clust.col=clust.col.list,
+                                    #                     .options.snow = list(progress=notification.3.fct),
+                                    #                     .packages=c("flowCore"),
+                                    #                     .export = c("is.defined","runs.list","pop.sizes","fcs","fcs.populations",
+                                    #                                 "FPH.get.file.clusters", "FPH.get.purity.matrix",
+                                    #                                 "FPH.get.prec.rec.matrices", "FPH.compute.F.G.matrix",
+                                    #                                 "FPH.annotate.clusters.to.fcs")) %dopar%
+                                    # {
+                                    temp.out <- lapply(runs.list, function(run.id)
                                     {
+                                        clust.col <- clust.col.list[[run.id]]
                                         #run.name <- current.project$ref.files.populations.col[[f.name]][[algo.name]]
                                         
                                         fcs.clusters <-  FPH.get.file.clusters(fcs, as.numeric(clust.col))
@@ -1306,7 +1309,7 @@ server <- function(input, output, session)
                                                     annot.sizes, mat.annot, prec.rec.annot, FG.annot,
                                                     clust.sizes, mat.clust#, prec.rec.clust, FG.clust
                                                     ))
-                                    }
+                                    })
                                     
                                     for (current.run in unlist(runs.list) )
                                     {
@@ -1320,7 +1323,7 @@ server <- function(input, output, session)
                                         # computed.values$prec.rec.matrices.clust[[f.name]][[algo.name]][[current.run]] <<- temp.out[[8]]
                                         # computed.values$FG.matrices.clust[[f.name]][[algo.name]][[current.run]] <<- temp.out[[9]] 
                                     }
-                                    stopCluster(cl)
+                                    # stopCluster(cl)
                                 }
                             })
                         }
@@ -2145,12 +2148,17 @@ server <- function(input, output, session)
                 {
                     f.id <- as.integer(isolate(input[["t_3_3_4_fileSel"]]))
                     fcs <- current.project$fcs.files[[f.id]]
+                    "%not.in%" <- Negate("%in%")
                     if(is.defined(fcs))
                     {
                         f.name <- names(current.project$fcs.files)[f.id]
                         alg.id <- as.integer(isolate(input[["t_3_3_4_methodSel"]]))
                         run.id <- as.integer(isolate(input[["t_3_3_4_runSel"]]))
 
+                        pop.col <- as.integer(current.project$ref.files.populations.col[[f.name]][[alg.id]][[run.id]])
+                        fcs.pop <- FPH.get.file.clusters(fcs, pop.col)
+                        pop.sizes <- computed.values$pop.sizes[[f.name]][[as.integer(isolate(input[["t_3_3_4_methodSel"]]))]][[as.integer(isolate(input[["t_3_3_4_runSel"]]))]]
+                        
                         clust.col <- as.integer(current.project$test.files.clusters.col[[f.name]][[alg.id]][[run.id]])
                         fcs.clusters <- FPH.get.file.clusters(fcs, clust.col)
                         clust.sizes <- as.integer(unlist(sapply(fcs.clusters, function(cl)
@@ -2168,8 +2176,7 @@ server <- function(input, output, session)
                         })))
 
                         f.mat.annot <- computed.values$FG.matrices.annot[[f.name]][[alg.id]][[run.id]][[1]]
-                        pop.names <- computed.values$pop.sizes[[f.name]][[as.integer(isolate(input[["t_3_3_4_methodSel"]]))]][[as.integer(isolate(input[["t_3_3_4_runSel"]]))]]
-                        pop.names <- names(pop.names)
+                        pop.names <- names(pop.sizes)
                         tmp <- FPH.map.test.to.ref(f.mat.annot)
                         annot.names <- 1:length(tmp)
                         annot.names <- paste0(pop.names[tmp],"__AN")
@@ -2180,19 +2187,19 @@ server <- function(input, output, session)
                         #CLUSTERS DETAILS-------------------------------------------------------------------------------------------------
                         if(is.defined(input[["t_3_3_4_purityByAnnot_slider"]]))
                         {
-                            val <- compute.purity.points(fcs.clusters, fcs.annot, pur.mat)
+                            val <- compute.purity.points(fcs.clusters, pur.mat, pop.names)
                             points.id <- val[[1]]
                             purity.points <- val[[2]]
-                            associated.annot <- val[[3]]
+                            associated.pop <- val[[3]]
 
                             selected.clusters <- c()
 
                             output$t_3_3_4_purityByAnnot <- renderImage(
                             {
                                 out.file <- tempfile(fileext = ".jpg")
-                                jpeg(out.file, width = 640, height = 480)
+                                jpeg(out.file, width = 720, height = 480)
                                 pur.thresh <- as.numeric(input[["t_3_3_4_purityByAnnot_slider"]])
-                                selected.clusters <<- plot.purity.by.annot(points.id, purity.points, annot.sizes, pur.thresh)
+                                selected.clusters <<- plot.purity.by.pop(points.id, purity.points, pop.sizes, pur.thresh)
                                 dev.off()
 
                                 list(src=out.file)
@@ -2200,25 +2207,28 @@ server <- function(input, output, session)
 
                             output$t_3_3_4_clustersDetailsBelow <- renderTable(
                             {
-                                outer.clusters <- 1:length(associated.annot)
+                                outer.clusters <- 1:length(associated.pop)
                                 outer.clusters <- outer.clusters[unlist(which(outer.clusters%not.in%selected.clusters))]
 
-                                cl.table.below <- matrix(NA, nrow=length(outer.clusters), ncol=4)
-                                colnames(cl.table.below) <- c("BELOW THRESHOLD","precision","Relative Size (annotation)", "Relative Size (file)")
+                                cl.table.below <- matrix(NA, nrow=length(outer.clusters), ncol=5)
+                                colnames(cl.table.below) <- c("BELOW THRESHOLD","precision","Relative Size (population)", 
+                                                              "Relative Size (file)", "Population")
                                 if(length(outer.clusters)>0)
                                 {
                                     sapply(1:length(outer.clusters), function(i)
                                     {
                                         cl.id <- outer.clusters[[i]]
-                                        annot.id <- associated.annot[[cl.id]]
+                                        pop.id <- associated.pop[[cl.id]]
+                                        pop.size <- pop.sizes[[pop.id]]*nrow(fcs@exprs)
                                         cl.size.file <- trunc(clust.sizes[[cl.id]]/sum(as.integer(unlist(clust.sizes)))*100000)/1000
-                                        cl.size.annot <- trunc(clust.sizes[[cl.id]]/as.integer(annot.sizes[[annot.id]])*100000)/1000
+                                        cl.size.pop <- trunc(clust.sizes[[cl.id]]/as.integer(pop.size)*100000)/1000
                                         cl.pur <- max(pur.mat[cl.id,])
 
                                         cl.table.below[i,1] <<- paste0("Cluster ", cl.id)
                                         cl.table.below[i,2] <<- trunc(cl.pur*10000)/10000
-                                        cl.table.below[i,3] <<- paste0(cl.size.annot, " %")
+                                        cl.table.below[i,3] <<- paste0(cl.size.pop, " %")
                                         cl.table.below[i,4] <<- paste0(cl.size.file, " %")
+                                        cl.table.below[i,5] <<- pop.names[[pop.id]]
 
                                     })
                                 }
@@ -2227,25 +2237,28 @@ server <- function(input, output, session)
                             })
                             output$t_3_3_4_clustersDetailsAbove <- renderTable(
                             {
-                                outer.clusters <- 1:length(associated.annot)
+                                outer.clusters <- 1:length(associated.pop)
                                 outer.clusters <- outer.clusters[unlist(which(outer.clusters%not.in%selected.clusters))]
 
-                                cl.table.above <- matrix(NA, nrow=length(selected.clusters), ncol=4)
-                                colnames(cl.table.above) <- c("ABOVE THRESHOLD","precision","Relative Size (annotation)", "Relative Size (file)")
+                                cl.table.above <- matrix(NA, nrow=length(selected.clusters), ncol=5)
+                                colnames(cl.table.above) <- c("ABOVE THRESHOLD","precision","Relative Size (population)", 
+                                                              "Relative Size (file)", "Population")
                                 if(length(selected.clusters)>0)
                                 {
                                     sapply(1:length(selected.clusters), function(i)
                                     {
                                         cl.id <- selected.clusters[[i]]
-                                        annot.id <- associated.annot[[cl.id]]
+                                        pop.id <- associated.pop[[cl.id]]
+                                        pop.size <- pop.sizes[[pop.id]]*nrow(fcs@exprs)
                                         cl.size.file <- trunc(clust.sizes[[cl.id]]/sum(as.integer(unlist(clust.sizes)))*100000)/1000
-                                        cl.size.annot <- trunc(clust.sizes[[cl.id]]/as.integer(annot.sizes[[annot.id]])*100000)/1000
+                                        cl.size.pop <- trunc(clust.sizes[[cl.id]]/as.integer(pop.size)*100000)/1000
                                         cl.pur <- max(pur.mat[cl.id,])
 
                                         cl.table.above[i,1] <<- paste0("Cluster ", cl.id)
                                         cl.table.above[i,2] <<- trunc(cl.pur*10000)/10000
-                                        cl.table.above[i,3] <<- paste0(cl.size.annot, " %")
+                                        cl.table.above[i,3] <<- paste0(cl.size.pop, " %")
                                         cl.table.above[i,4] <<- paste0(cl.size.file, " %")
+                                        cl.table.above[i,5] <<- pop.names[[pop.id]]
                                     })
                                 }
                                 pur.thresh <- as.numeric(input[["t_3_3_4_purityByAnnot_slider"]])
@@ -2254,13 +2267,6 @@ server <- function(input, output, session)
                         }
 
                         #POP DETAILS TABLES-------------------------------------------------------------------------------------------------
-                        pop.col <- as.integer(current.project$ref.files.populations.col[[f.name]][[alg.id]][[run.id]])
-                        fcs.pop <- FPH.get.file.clusters(fcs, pop.col)
-                        pop.sizes <- as.integer(unlist(sapply(fcs.pop, function(curr.pop)
-                        {
-                            return(curr.pop[[1]])
-                        })))
-
                         annot.pop.mapping.table <- matrix(NA, ncol=length(fcs.pop), nrow=length(fcs.annot))
 
                         pur.mat.annot <- computed.values$purity.matrix.annot[[f.name]][[alg.id]][[run.id]]
@@ -2301,7 +2307,10 @@ server <- function(input, output, session)
 
                         lapply(1:length(fcs.pop), function(p.id)
                         {
-                            pop.size.file <- trunc(pop.sizes[[p.id]]/sum(as.integer(unlist(pop.sizes)))*100000)/1000
+                            
+                            pop.size <- pop.sizes[[p.id]]*nrow(fcs@exprs)
+                            abs.pop.sizes <- unlist(pop.sizes)*nrow(fcs@exprs)
+                            pop.size.file <- trunc(pop.size/sum(as.integer(unlist(abs.pop.sizes)))*100000)/1000
                             pop.details.table[p.id, 1] <<- paste0(pop.size.file," %")
                             pop.details.table[p.id, 2] <<- paste0(mapping.pop.to.annot[[p.id]], " - ", annot.names[[p.id]])
                         })

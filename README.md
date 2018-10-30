@@ -1,6 +1,7 @@
 # Analysis Tool
 Analysis tool used in a pipeline meant to establish the efficiency of clustering algorithms. Developped as a shiny app.
- 
+
+>[User manual ](doc/Manual_analysistool.pdf)
 	
 ## Requirements
   * software: R(Version 3.4.3 to 3.5), Rstudio(optional)
