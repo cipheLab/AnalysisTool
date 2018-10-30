@@ -27,16 +27,16 @@ draw.cumulated.filled.plots <- function(points.list, points.list.xvalues, max.he
     
     plot(
         ggplot(df, aes(x=as.numeric(as.character(x.val)))) + 
-        geom_area(aes(y=as.numeric(as.character(y.val)), fill=Population), position="stack")+
-        scale_fill_manual("Annotations", values=plt.colors[1:nrow(mat)]) +
-        geom_area(aes(y=as.numeric(as.character(y.val)), fill=Population), position="stack", colour="black", show_guide=F)+
-        ylim(0,length(points.list)+1) +
-        xlab(x.lab) +
-        ylab(y.lab) +
-        geom_hline(yintercept=length(points.list)) + 
-        annotate("text", min(as.numeric(x.values)), length(points.list)+1, label="Max value") + 
-        labs(title = paste0("Cumulated F-score for parameter ",x.lab)) +
-        theme_bw() 
+            geom_area(aes(y=as.numeric(as.character(y.val)), fill=Population), position="stack")+
+            scale_fill_manual("Annotations", values=plt.colors[1:nrow(mat)]) +
+            geom_area(aes(y=as.numeric(as.character(y.val)), fill=Population), position="stack", colour="black", show_guide=F)+
+            ylim(0,length(points.list)+1) +
+            xlab(x.lab) +
+            ylab(y.lab) +
+            geom_hline(yintercept=length(points.list)) + 
+            annotate("text", min(as.numeric(x.values)), length(points.list)+1, label="Max value") + 
+            labs(title = paste0("Cumulated F-score for parameter ",x.lab)) +
+            theme_bw() 
     )
     
 }
@@ -84,18 +84,18 @@ draw.F.score.barplot <- function(F.score.matrix, populations.names, populations.
     plot(
         
         ggplot() + 
-        geom_bar(data=df.score, aes(x=factor(name,level=names(scores.list)),y=value, fill=1:length(scores.colors)), stat="identity") +
+            geom_bar(data=df.score, aes(x=factor(name,level=names(scores.list)),y=value, fill=1:length(scores.colors)), stat="identity") +
             scale_fill_gradientn("F-score", colors = scores.colors, labels=NULL) +
-        geom_bar(data=df.size, aes(x=factor(name,level=names(pop.sizes.list)),y=value, color="red"), stat="identity", fill="red") +
+            geom_bar(data=df.size, aes(x=factor(name,level=names(pop.sizes.list)),y=value, color="red"), stat="identity", fill="red") +
             scale_color_discrete("Relative Size", labels=NULL) +
-        scale_x_discrete(limits=factor(unlist(bar.names), levels=unlist(bar.names))) +
-        ylim(0,1.05) +
-        xlab("Populations") +
-        ylab("") +
-        labs(title = paste0("RUN - ",plot.title)) +
-        coord_flip() +
-        theme_bw() + 
-        theme(legend.direction="horizontal")
+            scale_x_discrete(limits=factor(unlist(bar.names), levels=unlist(bar.names))) +
+            ylim(0,1.05) +
+            xlab("Populations") +
+            ylab("") +
+            labs(title = paste0("RUN - ",plot.title)) +
+            coord_flip() +
+            theme_bw() + 
+            theme(legend.direction="horizontal")
     )
 }
 
@@ -141,8 +141,8 @@ plot.purity.by.annot <- function(annot.clusters, purity.val, annot.sizes, purity
     X <- X[above.points]
     
     plt.colors <- topo.colors(length(annot.clusters))
-    par(xpd = T, mar = par()$mar + c(0,0,0,7))
-    plot(X, Y, ylim=c(0,1.05), xlim=c(0,max(X)+1))
+    par(xpd = T, mar = c(5, 4, 4, 2) + c(0,0,0,7) + 0.1)
+    plot(X, Y, ylim=c(0,1.05), xlim=c(0,max(X)+1), xlab="clusters", ylab="purity")
     x0 <- 0
     y0 <- 0
     lapply(1:length(annot.clusters), function(an)
