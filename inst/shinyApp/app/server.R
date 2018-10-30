@@ -1254,8 +1254,8 @@ server <- function(input, output, session)
                                     nmb.cl <- get.nmb.cores.max(file.size, 
                                                                 available.cores = current.project$nmb.cores, 
                                                                 x.cores = 0.5, x.ram = 0.4, correction.coef = 1.05)
-                                    # cl <- makeCluster(nmb.cl)
-                                    # registerDoSNOW(cl)
+                                    cl <- makeCluster(nmb.cl)
+                                    registerDoSNOW(cl)
                                     
                                     notification.3.fct <- function(i)
                                     {
@@ -1263,17 +1263,14 @@ server <- function(input, output, session)
                                         showNotification(paste0("Run: ",i),id="score_compute_message_3",duration=NULL,type="message")
                                     }
                                     showNotification("Preparing computation",id="score_compute_message_3",duration=NULL,type="message")
-                                    # temp.out <- foreach(run.id=runs.list,clust.col=clust.col.list,
-                                    #                     .options.snow = list(progress=notification.3.fct),
-                                    #                     .packages=c("flowCore"),
-                                    #                     .export = c("is.defined","runs.list","pop.sizes","fcs","fcs.populations",
-                                    #                                 "FPH.get.file.clusters", "FPH.get.purity.matrix",
-                                    #                                 "FPH.get.prec.rec.matrices", "FPH.compute.F.G.matrix",
-                                    #                                 "FPH.annotate.clusters.to.fcs")) %dopar%
-                                    # {
-                                    temp.out <- lapply(runs.list, function(run.id)
+                                    temp.out <- foreach(run.id=runs.list,clust.col=clust.col.list,
+                                                        .options.snow = list(progress=notification.3.fct),
+                                                        .packages=c("flowCore"),
+                                                        .export = c("is.defined","runs.list","pop.sizes","fcs","fcs.populations",
+                                                                    "FPH.get.file.clusters", "FPH.get.purity.matrix",
+                                                                    "FPH.get.prec.rec.matrices", "FPH.compute.F.G.matrix",
+                                                                    "FPH.annotate.clusters.to.fcs")) %dopar%
                                     {
-                                        clust.col <- clust.col.list[[run.id]]
                                         #run.name <- current.project$ref.files.populations.col[[f.name]][[algo.name]]
                                         
                                         fcs.clusters <-  FPH.get.file.clusters(fcs, as.numeric(clust.col))
@@ -1309,7 +1306,7 @@ server <- function(input, output, session)
                                                     annot.sizes, mat.annot, prec.rec.annot, FG.annot,
                                                     clust.sizes, mat.clust#, prec.rec.clust, FG.clust
                                                     ))
-                                    })
+                                    }
                                     
                                     for (current.run in unlist(runs.list) )
                                     {
@@ -1323,7 +1320,7 @@ server <- function(input, output, session)
                                         # computed.values$prec.rec.matrices.clust[[f.name]][[algo.name]][[current.run]] <<- temp.out[[8]]
                                         # computed.values$FG.matrices.clust[[f.name]][[algo.name]][[current.run]] <<- temp.out[[9]] 
                                     }
-                                    # stopCluster(cl)
+                                    stopCluster(cl)
                                 }
                             })
                         }
