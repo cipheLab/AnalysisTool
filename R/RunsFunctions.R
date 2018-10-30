@@ -15,7 +15,7 @@ get.params.list <- function(runs)
             {
                 lapply(1:length(runs[[current.run.id]]), function(p)
                 {
-                    if(names(runs[[current.run.id]])[p]%notin%c(params.names.list))
+                    if(names(runs[[current.run.id]])[p]%not.in%c(params.names.list))
                     {
                         params.names.list <<- c(params.names.list, names(runs[[current.run.id]])[p])
                     }
@@ -33,7 +33,7 @@ get.params.list <- function(runs)
 #     ordered.param.values <- c()
 #     irrelevant.param.ids <- c()
 #     params.names.list <- c()
-#     "%notin%" <- Negate("%in%")
+#     "%not.in%" <- Negate("%in%")
 #     ordered.table <- c()
 #     
 #     #INIT LISTS
@@ -57,7 +57,7 @@ get.params.list <- function(runs)
 #                 
 #                 lapply(1:length(runs[[current.run.id]]), function(p)
 #                 {
-#                     if(names(runs[[current.run.id]])[p]%notin%c(params.names.list,param))
+#                     if(names(runs[[current.run.id]])[p]%not.in%c(params.names.list,param))
 #                     {
 #                         params.names.list <<- c(params.names.list, names(runs[[current.run.id]])[p])
 #                     }
@@ -135,7 +135,7 @@ get.ordered.table.from.runs <- function(runs, param)#Runs = list of list of para
     relevant.values <- c()
     irrelevant.ids <- c()
     params.names.list <- c()
-    "%notin%" <- Negate("%in%")
+    "%not.in%" <- Negate("%in%")
     ordered.table <- c()
     
     #INIT LISTS
@@ -157,7 +157,7 @@ get.ordered.table.from.runs <- function(runs, param)#Runs = list of list of para
             
             for(p in 1:length(runs[[current.run.id]]))
             {
-                if(names(runs[[current.run.id]])[p]%notin%c(params.names.list,param))
+                if(names(runs[[current.run.id]])[p]%not.in%c(params.names.list,param))
                 {
                     params.names.list <- c(params.names.list, names(runs[[current.run.id]])[p])
                 }
