@@ -124,6 +124,13 @@ FPH.annotate.clusters.to.fcs <- function(fcs.ref, purity.matrix, cl.col, thresho
         colnames(fcs.out.mat)[nc] <- "Annotations"
         fcs.out <- flowFrame(fcs.out.mat)
     }
+    else
+    {
+        fcs.out.mat <- cbind(fcs.ref@exprs,fcs.ref@exprs[,cl.col])
+        nc <- ncol(fcs.out.mat)
+        colnames(fcs.out.mat)[nc] <- "Annotations"
+        fcs.out <- flowFrame(fcs.out.mat)
+    }
     
     return(fcs.out)
 }
@@ -144,32 +151,35 @@ FPH.retrieve.clusters.data.from.file <- function(fcs.file)
         analyses.column <- list()
         for(k in 1:length(analyses.list))
         {
-            curr.analysis <- analyses.list[[k]]
-            run.name <- strsplit(curr.analysis,"__", fixed = T)[[1]][2]
-            
-            if(is.null(analyses.algo[[run.name]]))
+            if(!is.null(analyses.list[[k]]) && analyses.list[[k]] != "NULL")
             {
-                analyses.algo[[run.name]] <- NULL
-                analyses.markers[[run.name]] <- NULL
-                analyses.parameters[[run.name]] <- NULL
-                analyses.column[[run.name]] <- NULL
+                curr.analysis <- analyses.list[[k]]
+                run.name <- strsplit(curr.analysis,"__", fixed = T)[[1]][2]
+                
+                if(is.null(analyses.algo[[run.name]]))
+                {
+                    analyses.algo[[run.name]] <- NULL
+                    analyses.markers[[run.name]] <- NULL
+                    analyses.parameters[[run.name]] <- NULL
+                    analyses.column[[run.name]] <- NULL
+                }
+                analyses.algo[[run.name]] <- c(analyses.algo[[run.name]], curr.analysis)
+                analyses.column[[run.name]] <- c(analyses.column[[run.name]], strsplit(curr.analysis,"__", fixed = T)[[1]][3])
+                
+                used.markers <- strsplit(curr.analysis,"__", fixed = T)[[1]][4]
+                if(used.markers != "NULL")
+                {
+                    used.markers <- list(unlist(strsplit(used.markers, ".-.", fixed = T)[[1]]))
+                }
+                analyses.markers[[run.name]] <- c(analyses.markers[[run.name]], used.markers)
+                
+                used.parameters <- strsplit(curr.analysis,"__", fixed = T)[[1]][5]
+                if(used.parameters != "NULL")
+                {
+                    used.parameters <- list(unlist(strsplit(used.parameters, ".-.", fixed = T)[[1]]))
+                }
+                analyses.parameters[[run.name]] <- c(analyses.parameters[[run.name]], used.parameters)
             }
-            analyses.algo[[run.name]] <- c(analyses.algo[[run.name]], curr.analysis)
-            analyses.column[[run.name]] <- c(analyses.column[[run.name]], strsplit(curr.analysis,"__", fixed = T)[[1]][3])
-            
-            used.markers <- strsplit(curr.analysis,"__", fixed = T)[[1]][4]
-            if(used.markers != "NULL")
-            {
-                used.markers <- list(unlist(strsplit(used.markers, ".-.", fixed = T)[[1]]))
-            }
-            analyses.markers[[run.name]] <- c(analyses.markers[[run.name]], used.markers)
-            
-            used.parameters <- strsplit(curr.analysis,"__", fixed = T)[[1]][5]
-            if(used.parameters != "NULL")
-            {
-                used.parameters <- list(unlist(strsplit(used.parameters, ".-.", fixed = T)[[1]]))
-            }
-            analyses.parameters[[run.name]] <- c(analyses.parameters[[run.name]], used.parameters)
         }
     }
     return(list(analyses.algo,analyses.markers,analyses.parameters, analyses.column))

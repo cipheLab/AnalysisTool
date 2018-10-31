@@ -1314,7 +1314,7 @@ server <- function(input, output, session)
                                         computed.values$annot.sizes[[f.name]][[algo.name]][[current.run]] <<- temp.out[[current.run]][[2]]
                                         computed.values$purity.matrix.annot[[f.name]][[algo.name]][[current.run]] <<- temp.out[[current.run]][[3]]
                                         computed.values$prec.rec.matrices.annot[[f.name]][[algo.name]][[current.run]] <<- temp.out[[current.run]][[4]]
-                                        computed.values$FG.matrices.annot[[f.name]][[algo.name]][[current.run]] <<- temp.out[[current.run]][[5]] 
+                                        computed.values$FG.matrices.annot[[f.name]][[algo.name]][[current.run]] <<- temp.out[[current.run]][[5]]
                                         computed.values$clust.sizes[[f.name]][[algo.name]][[current.run]] <<- temp.out[[current.run]][[6]]
                                         computed.values$purity.matrix.clust[[f.name]][[algo.name]][[current.run]] <<- temp.out[[current.run]][[7]]
                                         # computed.values$prec.rec.matrices.clust[[f.name]][[algo.name]][[current.run]] <<- temp.out[[8]]
@@ -1713,7 +1713,6 @@ server <- function(input, output, session)
                             {
                                 null.pop.ids <- paste0(pop.names[-tmp],"__AN")
                             }
-                            
                             for(j in 1:nrow(mat))
                             {
                                 F.max <- max(mat[j,])
@@ -1721,6 +1720,14 @@ server <- function(input, output, session)
                                 {
                                     list.pop.points[[pop.ids[[i]][[j]]]] <- NULL
                                     list.pop.points.xval[[pop.ids[[i]][[j]]]] <- NULL
+                                }
+                                else
+                                {
+                                    if(is.na(list.pop.points[[pop.ids[[i]][[j]]]]))
+                                    {
+                                        list.pop.points[[pop.ids[[i]][[j]]]] <- NULL
+                                        list.pop.points.xval[[pop.ids[[i]][[j]]]] <- NULL
+                                    }
                                 }
                                 
                                 list.pop.points[[pop.ids[[i]][[j]]]] <- c(unlist(list.pop.points[[pop.ids[[i]][[j]]]]), F.max)
