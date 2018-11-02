@@ -27,9 +27,9 @@ draw.cumulated.filled.plots <- function(points.list, points.list.xvalues, max.he
     
     plot(
         ggplot(df, aes(x=as.numeric(as.character(x.val)))) + 
-        geom_area(aes(y=as.numeric(as.character(y.val)), fill=Population), position="stack")+
-        scale_fill_manual("Annotations", values=plt.colors[1:nrow(mat)]) +
-        geom_area(aes(y=as.numeric(as.character(y.val)), fill=Population), position="stack", colour="black", show_guide=F)+
+        geom_area(aes(y=as.numeric(as.character(y.val)), fill=Population), position="stack") +
+        scale_fill_manual("Annotations", values=alpha(plt.colors[1:nrow(mat)], 0.7)) +
+        geom_point(aes(y=as.numeric(as.character(y.val))), position="stack", colour="red") +
         ylim(0,length(points.list)+1) +
         xlab(x.lab) +
         ylab(y.lab) +
