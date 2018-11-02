@@ -2161,16 +2161,16 @@ server <- function(input, output, session)
 
                         pop.col <- as.integer(current.project$ref.files.populations.col[[f.name]][[alg.id]][[run.id]])
                         fcs.pop <- FPH.get.file.clusters(fcs, pop.col)
-                        pop.sizes <- computed.values$pop.sizes[[f.name]][[as.integer(isolate(input[["t_3_3_4_methodSel"]]))]][[as.integer(isolate(input[["t_3_3_4_runSel"]]))]]
+                        pop.sizes <- isolate(computed.values$pop.sizes[[f.name]][[as.integer(isolate(input[["t_3_3_4_methodSel"]]))]][[as.integer(isolate(input[["t_3_3_4_runSel"]]))]])
                         
-                        clust.col <- as.integer(current.project$test.files.clusters.col[[f.name]][[alg.id]][[run.id]])
+                        clust.col <- as.integer(isolate(current.project$test.files.clusters.col[[f.name]][[alg.id]][[run.id]]))
                         fcs.clusters <- FPH.get.file.clusters(fcs, clust.col)
                         clust.sizes <- as.integer(unlist(sapply(fcs.clusters, function(cl)
                         {
                             return(cl[[1]])
                         })))
 
-                        pur.mat <- computed.values$purity.matrix.clust[[f.name]][[alg.id]][[run.id]]
+                        pur.mat <- isolate(computed.values$purity.matrix.clust[[f.name]][[alg.id]][[run.id]])
 
                         fcs.annot.file <- FPH.annotate.clusters.to.fcs(fcs,pur.mat,clust.col)
                         fcs.annot <- FPH.get.file.clusters(fcs.annot.file, ncol(fcs.annot.file@exprs))
@@ -2179,7 +2179,7 @@ server <- function(input, output, session)
                             return(annot[[1]])
                         })))
 
-                        f.mat.annot <- computed.values$FG.matrices.annot[[f.name]][[alg.id]][[run.id]][[1]]
+                        f.mat.annot <- isolate(computed.values$FG.matrices.annot[[f.name]][[alg.id]][[run.id]][[1]])
                         pop.names <- names(pop.sizes)
                         tmp <- FPH.map.test.to.ref(f.mat.annot)
                         annot.names <- 1:length(tmp)
@@ -2189,7 +2189,7 @@ server <- function(input, output, session)
 
 
                         #CLUSTERS DETAILS-------------------------------------------------------------------------------------------------
-                        if(is.defined(input[["t_3_3_4_purityByAnnot_slider"]]))
+                        if(is.defined(isolate(input[["t_3_3_4_purityByAnnot_slider"]])))
                         {
                             val <- compute.purity.points(fcs.clusters, pur.mat, pop.names)
                             points.id <- val[[1]]
@@ -2236,7 +2236,7 @@ server <- function(input, output, session)
 
                                     })
                                 }
-                                pur.thresh <- as.numeric(input[["t_3_3_4_purityByAnnot_slider"]])
+                                pur.thresh <- isolate(as.numeric(input[["t_3_3_4_purityByAnnot_slider"]]))
                                 return(cl.table.below)
                             })
                             output$t_3_3_4_clustersDetailsAbove <- renderTable(
@@ -2265,7 +2265,7 @@ server <- function(input, output, session)
                                         cl.table.above[i,5] <<- pop.names[[pop.id]]
                                     })
                                 }
-                                pur.thresh <- as.numeric(input[["t_3_3_4_purityByAnnot_slider"]])
+                                pur.thresh <- isolate(as.numeric(input[["t_3_3_4_purityByAnnot_slider"]]))
                                 return(cl.table.above)
                             })
                         }
@@ -2273,7 +2273,7 @@ server <- function(input, output, session)
                         #POP DETAILS TABLES-------------------------------------------------------------------------------------------------
                         annot.pop.mapping.table <- matrix(NA, ncol=length(fcs.pop), nrow=length(fcs.annot))
 
-                        pur.mat.annot <- computed.values$purity.matrix.annot[[f.name]][[alg.id]][[run.id]]
+                        pur.mat.annot <- isolate(computed.values$purity.matrix.annot[[f.name]][[alg.id]][[run.id]])
                         fp.mat <- f.mat.annot
                         lapply(1:nrow(fp.mat), function(ro)
                         {
@@ -2356,46 +2356,65 @@ server <- function(input, output, session)
                     if(is.defined(fcs))
                     {
                         f.name <- names(current.project$fcs.files)[f.id]
-                        alg.id <- as.integer(input[["t_3_3_4_methodSel"]])
-                        run.id <- as.integer(input[["t_3_3_4_runSel"]])
-
-                        pur.mat <- computed.values$purity.matrix.clust[[f.name]][[alg.id]][[run.id]]
-                        clust.col <- as.numeric(current.project$test.files.clusters.col[[f.name]][[alg.id]][[run.id]])
-                        fcs.clusters <- FPH.get.file.clusters(fcs, clust.col)
-
-                        added.col <- matrix(rep(F,nrow(fcs@exprs)),ncol=1)
-                        colnames(added.col) <- paste0("purity.",ncol(fcs@exprs))
-
-                        lapply(1:length(fcs.clusters), function(i)
-                        {
-                            cl.p <- max(pur.mat[i,])
-                            if(cl.p >= as.numeric(input[["t_3_3_4_purityByAnnot_slider"]]))
-                            {
-                                added.col[as.integer(unlist(fcs.clusters[[i]][[2]]))] <<- T
-                            }
-                        })
-                        fcs <- enrich.FCS(fcs, added.col)
-
-                        purity.keyword <- as.numeric(input[["t_3_3_4_purityByAnnot_slider"]])
-                        purity.keyword.name <- paste0("EXPPUR__",ncol(fcs@exprs),"__",clust.col)
-                        fcs <- add.keyword.to.fcs(fcs, purity.keyword, purity.keyword.name)
-
-                        fcs.out.name <- paste0(f.name, "_EXPPUR")
-
-                        output$t_3_3_4_exportButton <- downloadHandler(
-                            filename = function()
-                            {
-                                paste0(fcs.out.name,".fcs")
-                            },
-                            content = function(file)
-                            {
-                                write.enriched.FCS(fcs, file)
-                            }
-                        )
                     }
                 }
             }
         }
     })
+
+    output$t_3_3_4_exportButton <- downloadHandler(
+        filename = function()
+        {
+            paste0(fcs.out.name,".fcs")
+        },
+        content = function(file)
+        {
+            if(is.defined(isolate(current.project$name)) && isolate(clustering.algorithms$run.analysis))
+            {
+                if(is.defined(isolate(current.project$fcs.files)) && length(isolate(computed.values$FG.matrices.annot))>0)
+                {
+                    if(is.defined(isolate(input[["t_3_3_4_fileSel"]])) && isolate(input[["t_3_3_4_fileSel"]])!="" && 
+                       isolate(input[["t_3_3_4_fileSel"]])!=" " && is.defined(isolate(input[["t_3_3_4_methodSel"]])) && 
+                       isolate(input[["t_3_3_4_methodSel"]]) !="" && isolate(input[["t_3_3_4_methodSel"]]) !=" " &&
+                       is.defined(isolate(input[["t_3_3_4_runSel"]])) && isolate(input[["t_3_3_4_runSel"]]) !="" && 
+                       isolate(input[["t_3_3_4_runSel"]])!=" " && is.defined(isolate(input[["t_3_3_4_purityByAnnot_slider"]])))
+                    {
+                        f.id <- as.integer(isolate(input[["t_3_3_4_fileSel"]]))
+                        fcs <- current.project$fcs.files[[f.id]]
+                        if(is.defined(fcs))
+                        {
+                            f.name <- names(current.project$fcs.files)[f.id]
+                            alg.id <- as.integer(isolate(input[["t_3_3_4_methodSel"]]))
+                            run.id <- as.integer(isolate(input[["t_3_3_4_runSel"]]))
+                            
+                            pur.mat <- computed.values$purity.matrix.clust[[f.name]][[alg.id]][[run.id]]
+                            clust.col <- as.numeric(current.project$test.files.clusters.col[[f.name]][[alg.id]][[run.id]])
+                            fcs.clusters <- FPH.get.file.clusters(fcs, clust.col)
+                            
+                            added.col <- matrix(rep(F,nrow(fcs@exprs)),ncol=1)
+                            colnames(added.col) <- paste0("purity.",ncol(fcs@exprs))
+                            
+                            lapply(1:length(fcs.clusters), function(i)
+                            {
+                                cl.p <- max(pur.mat[i,])
+                                if(cl.p >= as.numeric(isolate(input[["t_3_3_4_purityByAnnot_slider"]])))
+                                {
+                                    added.col[as.integer(unlist(fcs.clusters[[i]][[2]]))] <<- T
+                                }
+                            })
+                            fcs <- enrich.FCS(fcs, added.col)
+                            
+                            purity.keyword <- as.numeric(isolate(input[["t_3_3_4_purityByAnnot_slider"]]))
+                            purity.keyword.name <- paste0("EXPPUR__",ncol(fcs@exprs),"__",clust.col)
+                            fcs <- add.keyword.to.fcs(fcs, purity.keyword, purity.keyword.name)
+                            
+                            fcs.out.name <- paste0(f.name, "_EXPPUR")
+                        }
+                    }
+                }
+            }
+            write.enriched.FCS(fcs, file)
+        }
+    )
 }
 
