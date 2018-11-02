@@ -27,16 +27,16 @@ draw.cumulated.filled.plots <- function(points.list, points.list.xvalues, max.he
     
     plot(
         ggplot(df, aes(x=as.numeric(as.character(x.val)))) + 
-        geom_area(aes(y=as.numeric(as.character(y.val)), fill=Population), position="stack") +
-        scale_fill_manual("Annotations", values=alpha(plt.colors[1:nrow(mat)], 0.7)) +
-        geom_point(aes(y=as.numeric(as.character(y.val))), position="stack", colour="red") +
-        ylim(0,length(points.list)+1) +
-        xlab(x.lab) +
-        ylab(y.lab) +
-        geom_hline(yintercept=length(points.list)) + 
-        annotate("text", min(as.numeric(x.values)), length(points.list)+1, label="Max value") + 
-        labs(title = paste0("Cumulated F-score for parameter ",x.lab)) +
-        theme_bw() 
+            geom_area(aes(y=as.numeric(as.character(y.val)), fill=Population), position="stack") +
+            scale_fill_manual("Annotations", values=alpha(plt.colors[1:nrow(mat)], 0.7)) +
+            geom_point(aes(y=as.numeric(as.character(y.val))), position="stack", colour="red") +
+            ylim(0,length(points.list)+1) +
+            xlab(x.lab) +
+            ylab(y.lab) +
+            geom_hline(yintercept=length(points.list)) + 
+            annotate("text", min(as.numeric(x.values)), length(points.list)+1, label="Max value") + 
+            labs(title = paste0("Cumulated F-score for parameter ",x.lab)) +
+            theme_bw() 
     )
     
 }
@@ -84,18 +84,18 @@ draw.F.score.barplot <- function(F.score.matrix, populations.names, populations.
     plot(
         
         ggplot() + 
-        geom_bar(data=df.score, aes(x=factor(name,level=names(scores.list)),y=value, fill=1:length(scores.colors)), stat="identity") +
+            geom_bar(data=df.score, aes(x=factor(name,level=names(scores.list)),y=value, fill=1:length(scores.colors)), stat="identity") +
             scale_fill_gradientn("F-score", colors = scores.colors, labels=NULL) +
-        geom_bar(data=df.size, aes(x=factor(name,level=names(pop.sizes.list)),y=value, color="red"), stat="identity", fill="red") +
+            geom_bar(data=df.size, aes(x=factor(name,level=names(pop.sizes.list)),y=value, color="red"), stat="identity", fill="red") +
             scale_color_discrete("Relative Size", labels=NULL) +
-        scale_x_discrete(limits=factor(unlist(bar.names), levels=unlist(bar.names))) +
-        ylim(0,1.05) +
-        xlab("Populations") +
-        ylab("") +
-        labs(title = paste0("RUN - ",plot.title)) +
-        coord_flip() +
-        theme_bw() + 
-        theme(legend.direction="horizontal")
+            scale_x_discrete(limits=factor(unlist(bar.names), levels=unlist(bar.names))) +
+            ylim(0,1.05) +
+            xlab("Populations") +
+            ylab("") +
+            labs(title = paste0("RUN - ",plot.title)) +
+            coord_flip() +
+            theme_bw() + 
+            theme(legend.direction="horizontal")
     )
 }
 
@@ -154,6 +154,7 @@ plot.purity.by.pop <- function(pop.clusters, purity.val, pop.sizes, purity.thres
     for(p in 1:length(pop.clusters))
     {
         pop.id <- pop.order[p]
+        print(pop.id)
         if(length(pop.clusters[[pop.id]])>0)
         {
             if(p==1)
@@ -170,8 +171,12 @@ plot.purity.by.pop <- function(pop.clusters, purity.val, pop.sizes, purity.thres
             }
         }
         else
-        {   
-            x1 <- pop.rect.end[[length(pop.rect.end)]]
+        {
+            x1 <- 0
+            if(length(pop.rect.end)>0)
+            {
+                x1 <- pop.rect.end[[length(pop.rect.end)]]
+            }
             pop.rect.start <- c(pop.rect.start, x1)
             pop.rect.end <- c(pop.rect.end, x1)
         }
@@ -181,17 +186,17 @@ plot.purity.by.pop <- function(pop.clusters, purity.val, pop.sizes, purity.thres
     
     plot(
         ggplot() +
-        geom_rect(data=df.pop, aes(xmin=xstart, xmax=xend, ymin=-Inf, ymax=Inf, fill=pop), alpha=0.4) +
-        scale_fill_manual("Populations", values = plt.colors[1:length(pop.sizes)]) +
-        geom_line(data=df.clusters, aes(x,y)) +
-        geom_point(data=df.clusters, aes(x,y)) +
-        geom_hline(yintercept=purity.threshold) +
-        xlab("Clusters") +
-        ylab("Purity") + 
-        ylim(c(0,1.05)) +
-        xlim(c(0,length(X))) +
-        scale_x_discrete(labels=NULL) + 
-        annotate("text", min(as.numeric(X))+4, purity.threshold+0.03, label="Purity Threshold")
+            geom_rect(data=df.pop, aes(xmin=xstart, xmax=xend, ymin=-Inf, ymax=Inf, fill=pop), alpha=0.4) +
+            scale_fill_manual("Populations", values = plt.colors[1:length(pop.sizes)]) +
+            geom_line(data=df.clusters, aes(x,y)) +
+            geom_point(data=df.clusters, aes(x,y)) +
+            geom_hline(yintercept=purity.threshold) +
+            xlab("Clusters") +
+            ylab("Purity") + 
+            ylim(c(0,1.05)) +
+            xlim(c(0,length(X))) +
+            scale_x_discrete(labels=NULL) + 
+            annotate("text", min(as.numeric(X))+4, purity.threshold+0.03, label="Purity Threshold")
     )
     
     
